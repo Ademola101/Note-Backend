@@ -8,7 +8,8 @@
     "start": "node index.js",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
     "deploy": "git push heroku main",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +20,9 @@
     "mongoose": "^6.4.0"
   },
   "devDependencies": {
+    "eslint": "^8.18.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "nodemon": "^2.0.16"
   }
 }
