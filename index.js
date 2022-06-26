@@ -97,7 +97,8 @@ app.put('/api/notes/:id', (req, res, next) => {
   Note.findByIdAndUpdate(
     req.params.id,
     { content, important },
-    { new: true, runValidators: true, contex: query }).then((updatedNote) => {
+    { new: true, runValidators: true, contex: query },
+  ).then((updatedNote) => {
     res.json(updatedNote);
   }).catch((error) => next(error));
 });
