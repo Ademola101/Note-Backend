@@ -1,15 +1,16 @@
 const info = (...params) => {
-  console.log(...params);
+  if (process.env.NODE !== 'test') {
+    console.log(...params);
+  }
 };
-
 
 const error = (...params) => {
-
-  console.log(...params);
+  if (process.env.NODE !== 'test') {
+    console.log(...params);
+  }
 };
 
-
-module.exports =  {
+module.exports = {
   info,
-  error
-}
+  error,
+};
