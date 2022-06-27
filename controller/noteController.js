@@ -19,7 +19,7 @@ notesRouter.get('/:id', (req, res, next) => {
 });
 
 notesRouter.post('/', (req, res, next) => {
-  const { content, important, date } = req.body;
+  const { content, important } = req.body;
   const newNote = new Note({
     content,
     important,
