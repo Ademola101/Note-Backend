@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const config = require('./utils/config');
 
 const app = express();
-
 const notesRouter = require('./controller/noteController');
 const middleware = require('./utils/middleware');
 const logger = require('./utils/logger');
