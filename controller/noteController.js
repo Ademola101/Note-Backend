@@ -19,10 +19,10 @@ notesRouter.get('/:id', (req, res, next) => {
 });
 
 notesRouter.post('/', (req, res, next) => {
-  const { body } = req.body;
+  const { content, important, date } = req.body;
   const newNote = new Note({
-    content: body.content,
-    important: body.important,
+    content,
+    important,
     date: new Date(),
   });
 
