@@ -2,21 +2,9 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const Note = require('../models/note');
+const { initialNotes, noteInDb, nonExistingID } = require('./test_helper');
 
 const api = supertest(app);
-
-const initialNotes = [
-  {
-    content: 'HTML is easy',
-    date: new Date(),
-    important: false,
-  },
-  {
-    content: 'Browser can execute only Javascript',
-    date: new Date(),
-    important: true,
-  },
-];
 
 beforeEach(async () => {
   await Note.deleteMany({});
@@ -40,6 +28,29 @@ test('a specific note is within the return note', async () => {
   const content = response.body.map((r) => r.content);
   expect(content).toContain('Browser can execute only Javascript');
 }, 100000);
+
+test('a valid note can be added', async () => {
+  const newNote = {
+    content: 'async/await simplifies making async calls',
+    important: true,
+  };
+  await api.post('/api/notes').send(newNote).expect(201).expect('Content-Type', /application\/json/);
+  const notesAtEnd = await noteInDb();
+  expect(notesAtEnd).toHaveLength(initialNotes.length + 1);
+  const contents = notesAtEnd.map((note) => note.content);
+  expect(contents).toContain('async/await simplifies making async calls');
+});
+
+test('a note without content is added', async () => {
+  const newNote = {
+    important: true,
+  };
+
+  await api.post('/api/notes').send(newNote).expect(400);
+
+  const notesAtEnd = await noteInDb;
+  expect(notesAtEnd.body).toHaveLength(initialNotes.length);
+});
 afterAll(() => {
   mongoose.connection.close();
 });
