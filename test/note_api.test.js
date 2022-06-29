@@ -8,12 +8,12 @@ const api = supertest(app);
 
 beforeEach(async () => {
   await Note.deleteMany({});
-  let noteObject = new Note(initialNotes[0]);
-  await noteObject.save();
-  noteObject = new Note(initialNotes[1]);
-  noteObject.save();
-});
 
+  const noteObjects = initialNotes
+    .map((note) => new Note(note));
+  const promiseArray = noteObjects.map((note) => note.save());
+  await Promise.all(promiseArray);
+}, 100000);
 test('note return as json', async () => {
   await api.get('/api/notes').expect(200).expect('Content-Type', /application\/json/);
 }, 100000);
@@ -37,9 +37,9 @@ test('a valid note can be added', async () => {
   await api.post('/api/notes').send(newNote).expect(201).expect('Content-Type', /application\/json/);
   const notesAtEnd = await noteInDb();
   expect(notesAtEnd).toHaveLength(initialNotes.length + 1);
-  const contents = notesAtEnd.map((note) => note.content);
+  const contents = notesAtEnd.map((n) => n.content);
   expect(contents).toContain('async/await simplifies making async calls');
-});
+}, 100000);
 
 test('a note without content is added', async () => {
   const newNote = {
@@ -50,7 +50,7 @@ test('a note without content is added', async () => {
 
   const notesAtEnd = await noteInDb();
   expect(notesAtEnd).toHaveLength(initialNotes.length);
-});
+}, 100000);
 
 test('a specific note can be viewed', async () => {
   const noteAtStart = await noteInDb();
@@ -62,7 +62,7 @@ test('a specific note can be viewed', async () => {
   const processedNoteToView = JSON.parse(JSON.stringify(noteToView));
 
   expect(resultNote.body).toEqual(processedNoteToView);
-});
+}, 100000);
 
 test('a note can be deleted', async () => {
   const notesAtStart = await noteInDb();
@@ -81,7 +81,7 @@ test('a note can be deleted', async () => {
   const contents = notesAtEnd.map((r) => r.content);
 
   expect(contents).not.toContain(noteToDelete.content);
-});
+}, 100000);
 afterAll(() => {
   mongoose.connection.close();
 });
