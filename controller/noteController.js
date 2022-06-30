@@ -8,12 +8,8 @@ notesRouter.get('/', async (req, res) => {
 });
 
 notesRouter.get('/:id', async (req, res) => {
-  const note = await Note.findById( req.params.id);
-  if (note) {
-    res.json(note);
-  } else {
-    res.status(404).end();
-  }
+  const note = await Note.findById(req.params.id);
+  return note ? res.json(note) : res.status(404).end();
 });
 
 notesRouter.post('/', async (req, res) => {

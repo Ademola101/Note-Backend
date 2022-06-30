@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
+const { insertMany } = require('../models/note');
 const Note = require('../models/note');
 const { initialNotes, noteInDb, nonExistingID } = require('./test_helper');
 
@@ -8,26 +9,25 @@ const api = supertest(app);
 
 beforeEach(async () => {
   await Note.deleteMany({});
+  await insertMany(initialNotes);
+});
 
-  const noteObjects = initialNotes
-    .map((note) => new Note(note));
-  const promiseArray = noteObjects.map((note) => note.save());
-  await Promise.all(promiseArray);
-}, 100000);
-test('note return as json', async () => {
-  await api.get('/api/notes').expect(200).expect('Content-Type', /application\/json/);
-}, 100000);
+describe('when there is initially some note saved', () => {
+  test('notes return as json', async () => {
+    await api.get('/api/notes').expect(200).expect('Content-Type', /application\/json/);
+  }, 100000);
 
-test('all notes return', async () => {
-  const response = await api.get('/api/notes');
-  expect(response.body).toHaveLength(initialNotes.length);
-}, 100000);
+  test('all notes return', async () => {
+    const response = await api.get('/api/notes');
+    expect(response.body).toHaveLength(initialNotes.length);
+  }, 100000);
 
-test('a specific note is within the return note', async () => {
-  const response = await api.get('/api/notes');
-  const content = response.body.map((r) => r.content);
-  expect(content).toContain('Browser can execute only Javascript');
-}, 100000);
+  test('a specific note is within the return note', async () => {
+    const response = await api.get('/api/notes');
+    const content = response.body.map((r) => r.content);
+    expect(content).toContain('Browser can execute only Javascript');
+  }, 100000);
+});
 
 test('a valid note can be added', async () => {
   const newNote = {
@@ -41,6 +41,33 @@ test('a valid note can be added', async () => {
   expect(contents).toContain('async/await simplifies making async calls');
 }, 100000);
 
+describe('viewing a specific note', () => {
+  test('succed with a valid id', async () => {
+    const noteAtStart = await noteInDb();
+    const noteToView = noteAtStart[0];
+    const resultNote = await api.get(`/api/notes/${noteToView.id}`).expect(200).expect(
+      'Content-Type',
+      /application\/json/,
+    );
+    const processedNoteToView = JSON.parse(JSON.stringify(noteToView));
+
+    expect(resultNote.body).toEqual(processedNoteToView);
+  }, 100000);
+
+  test('fail with status code 404 if note does not exist', async () => {
+    const validNonExistingId = nonExistingID();
+    await api.get(`/api/notes/${validNonExistingId}`).expect(404);
+  });
+
+  test('failed with status code 400 bad request if idis invalid', async () => {
+    const invalidId = '5a3d5da59070081a82a3445';
+
+    await api
+      .get(`/api/notes/${invalidId}`)
+      .expect(400);
+  });
+});
+
 test('a note without content is added', async () => {
   const newNote = {
     important: true,
@@ -50,18 +77,6 @@ test('a note without content is added', async () => {
 
   const notesAtEnd = await noteInDb();
   expect(notesAtEnd).toHaveLength(initialNotes.length);
-}, 100000);
-
-test('a specific note can be viewed', async () => {
-  const noteAtStart = await noteInDb();
-  const noteToView = noteAtStart[0];
-  const resultNote = await api.get(`/api/notes/${noteToView.id}`).expect(200).expect(
-    'Content-Type',
-    /application\/json/,
-  );
-  const processedNoteToView = JSON.parse(JSON.stringify(noteToView));
-
-  expect(resultNote.body).toEqual(processedNoteToView);
 }, 100000);
 
 test('a note can be deleted', async () => {
