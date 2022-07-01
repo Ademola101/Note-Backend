@@ -22,13 +22,13 @@ const nonExistingID = async () => {
   return note._id.toString();
 };
 
-const noteInDb = async () => {
+const notesInDb = async () => {
   const notes = await Note.find({});
-  return notes.map((note) => note.toJSON);
+  return notes.map((note) => note.toJSON());
 };
 
 module.exports = {
   initialNotes,
-  noteInDb,
+  notesInDb,
   nonExistingID,
 };
