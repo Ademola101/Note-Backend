@@ -6,6 +6,7 @@ const config = require('./utils/config');
 const app = express();
 require('express-async-errors');
 const notesRouter = require('./controller/noteController');
+const userRouter = require('./controller/userController');
 const middleware = require('./utils/middleware');
 const logger = require('./utils/logger');
 
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(middleware.requestLogger);
 
 app.use('/api/notes', notesRouter);
+app.use('/api/user', userRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
