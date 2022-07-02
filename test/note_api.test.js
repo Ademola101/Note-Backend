@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
+const bcrypt = require('bcrypt');
 const app = require('../app');
-
+const User = require('../models/user');
 const Note = require('../models/note');
-const { initialNotes, notesInDb, nonExistingID } = require('./test_helper');
+const {
+  initialNotes, notesInDb, nonExistingID, usersInDb,
+} = require('./test_helper');
 
 const api = supertest(app);
 
@@ -118,6 +121,34 @@ describe('deletion of a note', () => {
     expect(contents).not.toContain(noteToDelete.content);
   });
 });
+
+describe('when there is a user in the db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+    const passwordHash = await bcrypt.hash('ademola', 10);
+    const newUser = new User({
+      username: 'ademola',
+      passwordHash,
+    });
+    await newUser.save();
+  });
+  test('creation success with a fresh username', async () => {
+    const userAtStart = await usersInDb();
+    const newUser = {
+      username: 'ade',
+      name: 'finobaci',
+      password: 'werey',
+    };
+
+    await api.post('/api/users').send(newUser).expect(201).expect('Content-Type', /application\/json/);
+    const userAtEnd = await usersInDb();
+
+    expect(userAtEnd).toHaveLength(userAtStart.length + 1);
+    const namesInDb = userAtEnd.map((user) => user.name);
+    expect(namesInDb).toContain(newUser.name);
+  }, 100000);
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
