@@ -147,6 +147,20 @@ describe('when there is a user in the db', () => {
     const namesInDb = userAtEnd.map((user) => user.name);
     expect(namesInDb).toContain(newUser.name);
   }, 100000);
+  test('user creation with already taken username failed with proper error code and message', async () => {
+    const user = {
+      username: 'ademola',
+      name: 'werey',
+      password: 'nigeria',
+    };
+    const userAtStart = await usersInDb();
+
+    const result = await api.post('/api/users').send(user).expect(409).expect('Content-Type', /application\/json/);
+    expect(result.body.error).toContain('username already taken');
+    const userAtEnd = await usersInDb();
+
+    expect(userAtStart).toEqual(userAtEnd);
+  });
 });
 
 afterAll(() => {
