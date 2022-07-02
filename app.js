@@ -7,6 +7,7 @@ const app = express();
 require('express-async-errors');
 const notesRouter = require('./controller/noteController');
 const userRouter = require('./controller/userController');
+const loginRouter = require('./controller/login');
 const middleware = require('./utils/middleware');
 const logger = require('./utils/logger');
 
@@ -27,6 +28,7 @@ app.use(middleware.requestLogger);
 
 app.use('/api/notes', notesRouter);
 app.use('/api/users', userRouter);
+app.use('/api/login', loginRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
