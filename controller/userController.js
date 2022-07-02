@@ -21,4 +21,9 @@ userRouter.post('/', async (req, res) => {
   res.status(201).json(savedUser);
 });
 
+userRouter.get('/', async (req, res) => {
+  const users = await User.find({}).populate('notes', { content: 1, date: 1 });
+  res.json(users);
+});
+
 module.exports = userRouter;
